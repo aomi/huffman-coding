@@ -4,6 +4,8 @@
 #define MAX 128
 
 int size = 0;
+int distribution = 0;
+
 struct Frequency {
    char  symbol;
    int   frequency;
@@ -30,8 +32,14 @@ struct Codes {
 
 void print_binary(unsigned n, int length) {
 	unsigned i;
-	for (i = 1 << (length - 2); i > 0; i = i / 2){
-		(n & i) ? printf("1") : printf("0");
+    if(distribution !=3){
+	    for (i = 1 << (length - 2); i > 0; i = i / 2){
+		    (n & i) ? printf("1") : printf("0");
+        }
+    }else if(distribution == 3){
+        for (i = 1 << (length - 3); i > 0; i = i / 2){
+		    (n & i) ? printf("1") : printf("0");
+        }
     }
     printf("\n");
 }
@@ -136,11 +144,21 @@ void treeless_huffman(struct Frequency* frequencies){
     int prev_freq = 0;
     int prev_freq_index= 0;
     int max_index = size - 1;
+
+    int distribution_3_counter = size-2;
+    
     while (counter < size) {
         char symbol = frequencies[max_index].symbol;
-        if(code_length_change(codeLength, counter) == 1){
+        if(distribution != 3 && code_length_change(codeLength, counter) == 1){
             codeLength++;
             code = code << 1;
+        }else if(distribution == 3 && distribution_3_counter > 0 ){
+            // TODO: check if the frequency isnt same as previous one?? only then increase code length
+            if(frequencies[distribution_3_counter+1].frequency != frequencies[distribution_3_counter].frequency){
+                codeLength++;
+                code = code << 1;
+            }
+            distribution_3_counter--;
         }
         codes[counter].code = code;
         codes[counter].symbol = symbol;
@@ -149,6 +167,8 @@ void treeless_huffman(struct Frequency* frequencies){
         counter++;
         code = code + 1;
         max_index--;
+        
+
     }
 }
 
@@ -173,6 +193,59 @@ void bubble_sort(struct Frequency *frequencies) {
   }
 }
 
+int is_same_frequency(struct Frequency* frequencies) {
+    int freq = 1;
+
+    for(int i = 1; i < size; i++) {
+        if(frequencies[i-1].frequency != frequencies[i].frequency) {
+            freq = -1;
+        }
+    }
+
+    if(freq == 1) {
+        // 2 is code for same frequency
+        return 2;
+    } else {
+        return -1;
+    }
+}
+
+int is_fib_frequency(struct Frequency* frequencies) {
+    int freq = -1;
+    for(int i = 2; i < size; i++) {
+        if(frequencies[i-1].frequency + frequencies[i-2].frequency <= frequencies[i].frequency) {
+            freq = 1;
+        }else{
+            freq = -1;
+            break;
+        }
+    }
+
+    if(freq == 1) {
+        // 3 is code for fib frequency
+        return 3;
+    } else {
+        return -1;
+    }
+}
+
+void find_what_distribution(struct Frequency *frequencies) {
+  struct Frequency temp;
+  int i = 0;
+
+    // frequency is all same
+  distribution = is_same_frequency(frequencies);
+    if(distribution == -1) {
+        // frequency distribution is finbonacci
+        distribution = is_fib_frequency(frequencies);
+        if(distribution == -1){
+            // frequency distribution is all different
+            // 1 is code for different frequency
+            distribution = 1;
+        }
+    }
+}
+
 int main(int argc,char **argv){
     if (argc != 2) {
         printf("Invalid input\n");
@@ -191,6 +264,13 @@ int main(int argc,char **argv){
     }
 
     bubble_sort(frequencies);   
+
+    find_what_distribution(frequencies);
+
+    printf("--------------------------\n");
+    printf("Distribution:\n");
+    printf("--------------------------\n");
+    printf("%d\n", distribution);
 
     printf("--------------------------\n");
     printf("Size:\n");
