@@ -145,7 +145,7 @@ void treeless_huffman(struct Frequency* frequencies){
     int prev_freq_index= 0;
     int max_index = size - 1;
 
-    int distribution_3_counter = size-2;
+    int distribution_3_counter = size-1;
     
     while (counter < size) {
         char symbol = frequencies[max_index].symbol;
@@ -153,8 +153,11 @@ void treeless_huffman(struct Frequency* frequencies){
             codeLength++;
             code = code << 1;
         }else if(distribution == 3 && distribution_3_counter > 0 ){
-            // TODO: check if the frequency isnt same as previous one?? only then increase code length
-            if(frequencies[distribution_3_counter+1].frequency != frequencies[distribution_3_counter].frequency){
+            if(distribution_3_counter == size-1){
+                codeLength++;
+                code = code << 1;
+            }
+            else if(frequencies[distribution_3_counter+1].frequency != frequencies[distribution_3_counter].frequency){
                 codeLength++;
                 code = code << 1;
             }
