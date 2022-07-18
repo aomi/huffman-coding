@@ -11,25 +11,13 @@ struct Frequency {
    int   frequency;
 };
 
-struct Codes {
+struct Code {
    char       symbol;
    unsigned   code;
    int        codeLength;
 };
 
-// void print_binary(int n, int length){
-//     printf("%d = ", n);
-//     while (n) {
-//         if (n & 1)
-//             printf("1");
-//         else
-//             printf("0");
-
-//         n >>= 1;
-//     }
-//     printf("\n");
-// }
-
+// ------------ DEBUG METHODS ------------
 void print_binary(unsigned n, int length) {
 	unsigned i;
     if(distribution !=3){
@@ -49,7 +37,7 @@ void print_struct(struct Frequency frequency) {
     printf(" | Frequency: %d\n", frequency.frequency);
 }
 
-void print_struct_codes(struct Codes code) {
+void print_struct_codes(struct Code code) {
     printf("Symbol: %c", code.symbol);
     printf(" | Code: ");
     print_binary(code.code, code.codeLength);
@@ -64,7 +52,9 @@ int find_symbol_index(struct Frequency* frequencies, char symbol) {
 
     return -1;
 }
+// ------------ END DEBUG METHODS ------------
 
+// ------------ HELPER METHODS ------------
 // read through the file building <char,char count> map
 void get_frequencies(char* f_name, struct Frequency* frequencies) {
     FILE *fp = fopen(f_name, "rb");
@@ -83,7 +73,6 @@ void get_frequencies(char* f_name, struct Frequency* frequencies) {
             int prev_freq = curr_freq.frequency;
             prev_freq++;
             frequencies[i].frequency = prev_freq++;
-            print_struct(frequencies[i]);
         }
         c = fgetc(fp);
     }
@@ -94,23 +83,6 @@ void get_frequencies(char* f_name, struct Frequency* frequencies) {
     frequencies[j + 1].frequency = 1;
 }
 
-// Finds the minimum code length for the algorithm
-// ... ? idk what it does
-// assume minimum code length is always 2
-int minimum_code_length(int* frequencies){
-    return 2;
-}
-
-int next_maximum_frequency(int* frequencies, int prev_freq, int prev_freq_index) {
-    int max = 0;
-    for(int i = 0; i < MAX; i++) {
-        if(frequencies[i] > max && frequencies[i]) {
-            max = frequencies[i];
-        }
-    }
-
-    return max;
-}
 int code_length_change(int codeLength,int counter){
     int newCodeLength = 2;
     if(counter >= 2 && counter < 6){
@@ -132,45 +104,6 @@ int code_length_change(int codeLength,int counter){
         return 0;
     }
 }
-// Input: A list of symbolss sorted by their frequencies (descending)
-void treeless_huffman(struct Frequency* frequencies){
-    //assuming min code_length is 2
-    int codeLength = 2;
-    int code = 0;
-
-    struct Codes codes[size];
-
-    int counter = 0;
-    int prev_freq = 0;
-    int prev_freq_index= 0;
-    int max_index = size - 1;
-
-    int distribution_3_counter = size-2;
-    
-    while (counter < size) {
-        char symbol = frequencies[max_index].symbol;
-        if(distribution != 3 && code_length_change(codeLength, counter) == 1){
-            codeLength++;
-            code = code << 1;
-        }else if(distribution == 3 && distribution_3_counter > 0 ){
-            // TODO: check if the frequency isnt same as previous one?? only then increase code length
-            if(frequencies[distribution_3_counter+1].frequency != frequencies[distribution_3_counter].frequency){
-                codeLength++;
-                code = code << 1;
-            }
-            distribution_3_counter--;
-        }
-        codes[counter].code = code;
-        codes[counter].symbol = symbol;
-        codes[counter].codeLength = codeLength;
-        print_struct_codes(codes[counter]);
-        counter++;
-        code = code + 1;
-        max_index--;
-        
-
-    }
-}
 
 // From: https://github.com/aryanmid123/c-sorting-algorithms/blob/master/algorithms/bubble_sort.h
 void bubble_sort(struct Frequency *frequencies) {
@@ -181,7 +114,6 @@ void bubble_sort(struct Frequency *frequencies) {
   while (i < size) {
     j = 0;
     while (j < i) {
-    printf("%d, %d\n", frequencies[j].frequency, frequencies[i].frequency);
       if (frequencies[j].frequency > frequencies[i].frequency) {
         temp = frequencies[j];
         frequencies[j] = frequencies[i];
@@ -205,9 +137,9 @@ int is_same_frequency(struct Frequency* frequencies) {
     if(freq == 1) {
         // 2 is code for same frequency
         return 2;
-    } else {
-        return -1;
     }
+
+    return -1;
 }
 
 int is_fib_frequency(struct Frequency* frequencies) {
@@ -224,9 +156,9 @@ int is_fib_frequency(struct Frequency* frequencies) {
     if(freq == 1) {
         // 3 is code for fib frequency
         return 3;
-    } else {
-        return -1;
     }
+
+    return -1;
 }
 
 void find_what_distribution(struct Frequency *frequencies) {
@@ -243,6 +175,45 @@ void find_what_distribution(struct Frequency *frequencies) {
             // 1 is code for different frequency
             distribution = 1;
         }
+    }
+}
+// ------------ END HELPER METHODS ------------
+
+// Input: A list of symbolss sorted by their frequencies (descending)
+void treeless_huffman(struct Frequency* frequencies){
+    //assuming min code_length is 2
+    int codeLength = 2;
+    int code = 0;
+
+    struct Code codes[size];
+
+    int counter = 0;
+    int prev_freq = 0;
+    int prev_freq_index= 0;
+    int max_index = size - 1;
+
+    int distribution_3_counter = size-2;
+
+    while (counter < size) {
+        char symbol = frequencies[max_index].symbol;
+        if(distribution != 3 && code_length_change(codeLength, counter) == 1){
+            codeLength++;
+            code = code << 1;
+        } else if(distribution == 3 && distribution_3_counter > 0 ){
+            // TODO: check if the frequency isnt same as previous one?? only then increase code length
+            if(frequencies[distribution_3_counter+1].frequency != frequencies[distribution_3_counter].frequency){
+                codeLength++;
+                code = code << 1;
+            }
+            distribution_3_counter--;
+        }
+        codes[counter].code = code;
+        codes[counter].symbol = symbol;
+        codes[counter].codeLength = codeLength;
+        print_struct_codes(codes[counter]);
+        counter++;
+        code = code + 1;
+        max_index--;
     }
 }
 
