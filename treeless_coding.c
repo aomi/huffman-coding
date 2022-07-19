@@ -234,7 +234,7 @@ int main(int argc,char **argv){
         print_struct(frequencies[i]);
     }
 
-    bubble_sort(frequencies);   
+    bubble_sort(frequencies);
 
     find_what_distribution(frequencies);
 
