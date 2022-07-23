@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Amount of ASCII characters
 #define ALPHABET_SIZE 128
 
 // A Huffman tree node
@@ -188,7 +189,6 @@ void huffmanCodes(char data[], int freq[], int size) {
 	printCodes(root, arr, top);
 }
 
-// Driver code
 int main(int argc, char **argv) {
 	char arr[] = { 'a', 'b', 'c', 'd', 'e', 'f' };
 	int freq[] = { 5, 9, 12, 13, 16, 45 };
