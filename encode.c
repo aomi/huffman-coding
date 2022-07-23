@@ -30,7 +30,7 @@ void print_frequency(struct Frequency frequency) {
     printf(" | Frequency: %d\n", frequency.frequency);
 }
 
-struct MinHeapNode* newNode(char data, unsigned freq) {
+struct MinHeapNode* new_node(char data, unsigned freq) {
 	struct MinHeapNode* temp = (struct MinHeapNode*)malloc(sizeof(struct MinHeapNode));
 
 	temp->left = temp->right = NULL;
@@ -40,7 +40,7 @@ struct MinHeapNode* newNode(char data, unsigned freq) {
 	return temp;
 }
 
-struct MinHeap* createMinHeap(unsigned capacity) {
+struct MinHeap* create_min_heap(unsigned capacity) {
 	struct MinHeap* minHeap = (struct MinHeap*)malloc(sizeof(struct MinHeap));
 
 	// current size is 0
@@ -51,13 +51,13 @@ struct MinHeap* createMinHeap(unsigned capacity) {
 	return minHeap;
 }
 
-void swapMinHeapNode(struct MinHeapNode** a, struct MinHeapNode** b) {
+void swap_nodes(struct MinHeapNode** a, struct MinHeapNode** b) {
 	struct MinHeapNode* t = *a;
 	*a = *b;
 	*b = t;
 }
 
-void minHeapify(struct MinHeap* minHeap, int idx) {
+void min_heapify(struct MinHeap* minHeap, int idx) {
 	int smallest = idx;
 	int left = 2 * idx + 1;
 	int right = 2 * idx + 2;
@@ -71,28 +71,28 @@ void minHeapify(struct MinHeap* minHeap, int idx) {
     }
 
 	if (smallest != idx) {
-		swapMinHeapNode(&minHeap->array[smallest],
+		swap_nodes(&minHeap->array[smallest],
 						&minHeap->array[idx]);
-		minHeapify(minHeap, smallest);
+		min_heapify(minHeap, smallest);
 	}
 }
 
-int isSizeOne(struct MinHeap* minHeap) {
+int is_of_size_one(struct MinHeap* minHeap) {
 	return (minHeap->size == 1);
 }
 
-struct MinHeapNode* extractMin(struct MinHeap* minHeap) {
+struct MinHeapNode* extract_minimum(struct MinHeap* minHeap) {
 	struct MinHeapNode* temp = minHeap->array[0];
 
 	minHeap->array[0] = minHeap->array[minHeap->size - 1];
 	--minHeap->size;
 
-	minHeapify(minHeap, 0);
+	min_heapify(minHeap, 0);
 
 	return temp;
 }
 
-void insertMinHeap(struct MinHeap* minHeap, struct MinHeapNode* minHeapNode) {
+void insert_into_min_heap(struct MinHeap* minHeap, struct MinHeapNode* minHeapNode) {
 	++minHeap->size;
 	int i = minHeap->size - 1;
 
@@ -104,85 +104,90 @@ void insertMinHeap(struct MinHeap* minHeap, struct MinHeapNode* minHeapNode) {
 	minHeap->array[i] = minHeapNode;
 }
 
-void buildMinHeap(struct MinHeap* minHeap) {
-
+void build_min_heap(struct MinHeap* minHeap) {
 	int n = minHeap->size - 1;
 	int i;
 
 	for (i = (n - 1) / 2; i >= 0; --i) {
-		minHeapify(minHeap, i);
+		min_heapify(minHeap, i);
     }
 }
 
-void printArr(int arr[], int n)
+void print_array(int arr[], int n)
 {
 	int i;
 	for (i = 0; i < n; ++i) {
 		printf("%d", arr[i]);
     }
-
-	printf("\n");
+    // delimiter
+    printf(",");
 }
 
-int isLeaf(struct MinHeapNode* root) {
+int is_leaf(struct MinHeapNode* root) {
 	return !(root->left) && !(root->right);
 }
 
-struct MinHeap* createAndBuildMinHeap(struct Frequency frequencies[], int size) {
-	struct MinHeap* minHeap = createMinHeap(size);
+struct MinHeap* create_and_build_min_heap(struct Frequency frequencies[], int size) {
+	struct MinHeap* minHeap = create_min_heap(size);
 
 	for (int i = 0; i < size; ++i) {
-		minHeap->array[i] = newNode(frequencies[i].symbol, frequencies[i].frequency);
+		minHeap->array[i] = new_node(frequencies[i].symbol, frequencies[i].frequency);
     }
 
 	minHeap->size = size;
-	buildMinHeap(minHeap);
+	build_min_heap(minHeap);
 
 	return minHeap;
 }
 
-struct MinHeapNode* buildHuffmanTree(struct Frequency frequencies[], int size) {
+struct MinHeapNode* build_huffman_tree(struct Frequency frequencies[], int size) {
 	struct MinHeapNode *left, *right, *top;
 
-	struct MinHeap* minHeap = createAndBuildMinHeap(frequencies, size);
+	struct MinHeap* minHeap = create_and_build_min_heap(frequencies, size);
 
-	while (!isSizeOne(minHeap)) {
-		left = extractMin(minHeap);
-		right = extractMin(minHeap);
+	while (!is_of_size_one(minHeap)) {
+		left = extract_minimum(minHeap);
+		right = extract_minimum(minHeap);
 
-		top = newNode('$', left->freq + right->freq);
+		top = new_node('$', left->freq + right->freq);
 		top->left = left;
 		top->right = right;
 
-		insertMinHeap(minHeap, top);
+		insert_into_min_heap(minHeap, top);
 	}
 
-	return extractMin(minHeap);
+	return extract_minimum(minHeap);
 }
 
-void printCodes(struct MinHeapNode* root, int arr[], int top) {
+void write_codes(struct MinHeapNode* root, int arr[], int top, int lut[]) {
 	if (root->left) {
 		arr[top] = 0;
-		printCodes(root->left, arr, top + 1);
+		write_codes(root->left, arr, top + 1, lut);
 	}
 
 	if (root->right) {
 		arr[top] = 1;
-		printCodes(root->right, arr, top + 1);
+		write_codes(root->right, arr, top + 1, lut);
 	}
 
-	if (isLeaf(root)) {
-		printf("%c: ", root->data);
-		printArr(arr, top);
+	if (is_leaf(root)) {
+        int code = 0;
+        for(int i = 0; i < top; i++){
+            code += (arr[i] << (top - (i + 1)));
+        }
+
+        lut[root->data] = code;
+		printf("%c", root->data);
+		print_array(arr, top);
 	}
 }
 
-void HuffmanCodes(struct Frequency frequencies[], int size) {
-	struct MinHeapNode* root = buildHuffmanTree(frequencies, size);
+void encode(struct Frequency frequencies[], int size, int lut[]) {
+	struct MinHeapNode* root = build_huffman_tree(frequencies, size);
 
-	int arr[MAX_TREE_HT], top = 0;
+	int arr[MAX], top = 0;
 
-	printCodes(root, arr, top);
+	write_codes(root, arr, 0, lut);
 }
 
 int find_symbol_index(struct Frequency* frequencies, char symbol) {
@@ -193,6 +198,23 @@ int find_symbol_index(struct Frequency* frequencies, char symbol) {
     }
 
     return -1;
+}
+
+void read(){
+	FILE *fp;
+	struct Frequency my_record;
+
+	fp = fopen("out.bin", "rb");
+	if (!fp) {
+		printf("Unable to open file!");
+		return;
+	}
+	for (int i = 0; i < size; i++) {
+		fread(&my_record, sizeof(struct Frequency), 1, fp);
+		printf("%c %d\n", my_record.symbol, my_record.frequency);
+	}
+
+	fclose(fp);
 }
 
 void get_frequencies(char* f_name, struct Frequency* frequencies) {
@@ -222,16 +244,31 @@ void get_frequencies(char* f_name, struct Frequency* frequencies) {
     frequencies[j + 1].frequency = 1;
 }
 
+
 int main(int argc, char **argv) {
     if (argc != 2) {
         printf("Invalid input\n");
         return 0;
     }
-    char* f_name = argv[1];
+    char* f_input = argv[1];
     struct Frequency frequencies[MAX];
-    get_frequencies(f_name, frequencies);
+    get_frequencies(f_input, frequencies);
 
-	HuffmanCodes(frequencies, size);
+    int lut[MAX] = { };
+	encode(frequencies, size, lut);
+
+    FILE *fp = fopen(f_input, "rb");
+
+    // Separate the code mappings from the encoded message
+    printf("\n");
+    char c = fgetc(fp);
+    while (!feof(fp)) {
+        putchar(lut[c]);
+        c = fgetc(fp);
+    }
+    printf("\n");
+
+    fclose(fp);
 
 	return 0;
 }

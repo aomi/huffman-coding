@@ -43,7 +43,7 @@ void read(){
 	FILE *fp;
 	struct rec my_record;
 
-	fp = fopen("test.bin", "rb");
+	fp = fopen("test", "rb");
 	if (!fp) {
 		printf("Unable to open file!");
 		return;
