@@ -159,7 +159,7 @@ struct MinHeapNode* build_huffman_tree(struct Frequency frequencies[], int size)
 	return extract_minimum(minHeap);
 }
 
-void write_codes(struct MinHeapNode* root, int arr[], int top, int lut[]) {
+void write_codes(struct MinHeapNode* root, int arr[], int top, char* lut[]) {
 	if (root->left) {
 		arr[top] = 0;
 		write_codes(root->left, arr, top + 1, lut);
@@ -171,9 +171,13 @@ void write_codes(struct MinHeapNode* root, int arr[], int top, int lut[]) {
 	}
 
 	if (is_leaf(root)) {
-        int code = 0;
+        char* code = (char *)malloc(top + 1);
         for(int i = 0; i < top; i++){
-            code += (arr[i] << (top - (i + 1)));
+			if(arr[i] == 1){
+            	code[i] = '1';
+			} else {
+				code[i] = '0';
+			}
         }
 
         lut[root->data] = code;
@@ -182,7 +186,7 @@ void write_codes(struct MinHeapNode* root, int arr[], int top, int lut[]) {
 	}
 }
 
-void encode(struct Frequency frequencies[], int size, int lut[]) {
+void encode(struct Frequency frequencies[], int size, char* lut[]) {
 	struct MinHeapNode* root = build_huffman_tree(frequencies, size);
 
 	int arr[MAX], top = 0;
@@ -244,6 +248,12 @@ void get_frequencies(char* f_name, struct Frequency* frequencies) {
     frequencies[j + 1].frequency = 1;
 }
 
+void print_bin(unsigned char value)
+{
+    for (int i = sizeof(char) * 7; i >= 0; i--)
+        printf("%d", (value & (1 << i)) >> i );
+    putc('\n', stdout);
+}
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -254,7 +264,7 @@ int main(int argc, char **argv) {
     struct Frequency frequencies[MAX];
     get_frequencies(f_input, frequencies);
 
-    int lut[MAX] = { };
+    char* lut[MAX] = { };
 	encode(frequencies, size, lut);
 
     FILE *fp = fopen(f_input, "rb");
@@ -262,8 +272,24 @@ int main(int argc, char **argv) {
     // Separate the code mappings from the encoded message
     printf("\n");
     char c = fgetc(fp);
+	char curr = 0;
+	int count = 0;
     while (!feof(fp)) {
-        putchar(lut[c]);
+		char* s = lut[c];
+		for(int i = 0; s[i] != '\0'; i++){
+			if(s[i] == '1'){
+				curr = ((curr << 1) | 1);
+			} else {
+				curr <<= 1;
+			}
+			count++;
+			if(count == 8) {
+				putchar(curr);
+				count = 0;
+				curr = 0;
+			}
+		}
+        // putchar(lut[c]);
         c = fgetc(fp);
     }
     printf("\n");
