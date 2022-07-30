@@ -3,6 +3,8 @@
 
 int main(int argc,char **argv){
     for(int i = 0; i < 128; i++){
-        printf("%c", i);
+        printf("%c\n", i);
     }
+    int i = 200;
+    printf("aa %c\n", i);
 }

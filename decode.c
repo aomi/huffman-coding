@@ -2,9 +2,9 @@
 #include <stdlib.h>
 
 struct symbol {
+   int table_idx;
    char  symbol;
    int code_length;
-   int table_idx;
 };
 
 void print_symbol(struct symbol symbol) {
@@ -21,15 +21,15 @@ void print_bin(unsigned char value)
 }
 
 struct symbol* all_lut[256] = { NULL };
-int lut_count = 1;
+int lut_count = 0;
 
 void build_lut(struct symbol* lut, FILE* fp) {
 	char c = fgetc(fp);
 
-	int z = 0;
 	// Iterate through the first line character by character
-	while(c != '\n') {
+	while(1) {
 		// Construct a new entry for the LUT
+		// printf("Starting ASCII #%d, %c\n", c, c);
 		struct symbol new_entry;
 		new_entry.symbol = c;
 
@@ -41,7 +41,7 @@ void build_lut(struct symbol* lut, FILE* fp) {
 		while(1) {
 			c = fgetc(fp);
 			// Comma separated, break from the loop if at end of code
-			if(c == ',') {
+			if(c == ',' || c == '\n') {
 				break;
 			}
 			// TODO: Is 32 max? this is a guess
@@ -51,8 +51,6 @@ void build_lut(struct symbol* lut, FILE* fp) {
 			code |= (c == '1') << (31 - len);
 			len++;
 		}
-		new_entry.code_length = len;
-		new_entry.table_idx = 0;
 
 		int temp_len = len;
 		int lut_idx = 0;
@@ -60,39 +58,52 @@ void build_lut(struct symbol* lut, FILE* fp) {
 		// Iterate through the code spliting it up into chunks of 8
 		// Upsets appropriate look up table
 		while(temp_len > 8) {
+			// printf("Entering...\n");
 			// Shift the code so the only 8 bits we care about are present as the most significant bits
 			unsigned int temp = code << (8 * i);
 			// Shift so the 8 significant bits are the only bits
 			char chunk = temp >> 24;
-			// If the LUT we are looking at exists
-			// This should always be true?
-			if(all_lut[lut_idx] != NULL){
-				// (Pointer to) The current symbol we care about
-				struct symbol *curr = &all_lut[lut_idx][chunk];
-				// If this chunk hasn't been initialized (doesn't point to another LUT)
-				if(curr == NULL) {
-					// Create a new LUT and point to it at this chunk of the current LUT
-					lut_count++;
-					all_lut[lut_count] = malloc(256 * sizeof(struct symbol));
-					all_lut[lut_idx][chunk].table_idx = lut_count;
-				}
-				// Head into the next LUT and shift over 8 bits
-				lut_idx = all_lut[lut_idx][chunk].table_idx;
-				temp_len -= 8;
+			// printf("chunk from table#%d: ", lut_idx);
+			// print_bin(chunk);
+
+			struct symbol curr = all_lut[lut_idx][chunk];
+			// printf("Curr 1: \n");
+			// print_symbol(curr);
+			// If this chunk hasn't been initialized (doesn't point to another LUT)
+			if(curr.table_idx == lut_idx) {
+				// printf("No current\n");
+				// Create a new LUT and point to it at this chunk of the current LUT
+				lut_count++;
+				struct symbol new_lut[256] = {{0}};
+				all_lut[lut_count] = new_lut;
+				all_lut[lut_idx][chunk].table_idx = lut_count;
+				all_lut[lut_idx][chunk].code_length = 8;
+				// printf("created #%d\n", lut_count);
 			}
+			// printf("lut amount %d\n", lut_count);
+			// printf("Curr: \n");
+			// print_symbol(all_lut[lut_idx][chunk]);
+			// Head into the next LUT and shift over 8 bits
+			// printf("bitch %d\n", all_lut[lut_idx][chunk].table_idx);
+			lut_idx = all_lut[lut_idx][chunk].table_idx;
+			temp_len -= 8;
+			i++;
 		}
+
+		new_entry.code_length = temp_len;
+		new_entry.table_idx = lut_idx;
 
 		// Once it comes to iteratively entering the symbol into the LUT we only care about the last 8 bits
 		u_int8_t lower_bound = code >> (32 - 8);
-    	u_int8_t upper_bound = lower_bound | (0b11111111 >> temp_len);
+    	u_int8_t upper_bound = lower_bound | (0b11111111 >> len);
 
+		// printf("For table %d\n", lut_idx);
 		// Enter into LUT.
 		// i.e. for code "10", all values integers "0b10XXXXXX" should find this entry
 		// That is why we need an upper and lower bound
 		for (int i = lower_bound; i <= upper_bound; i++){
 			all_lut[lut_idx][i] = new_entry;
 		}
-
 		// print_symbol(new_entry);
 		// printf("code: ");
 		// print_bin(lower_bound >> (8 - len));
@@ -101,8 +112,12 @@ void build_lut(struct symbol* lut, FILE* fp) {
 		// printf("upper: ");
 		// print_bin(upper_bound);
 
+		if(c == '\n') {
+			break;
+		}
+
 		c = fgetc(fp);
-		z++;
+		// printf("Moving on to ASCII #%d, %c\n", c, c);
 	}
 }
 
@@ -152,15 +167,17 @@ int main(int argc,char **argv){
     }
     char* f_input = argv[1];
 
-	struct symbol default_symbol;
-	// default_symbol.code_length = 0;
-	// default_symbol.symbol = 0;
-	default_symbol.table_idx = 0;
-	struct symbol* lut = malloc(256 * sizeof(struct symbol));
+	struct symbol lut[256] = {{0}};
 	all_lut[0] = lut;
 
     FILE *fp = fopen(f_input, "rb");
 	build_lut(lut, fp);
+	// for(int i = 0; i < 256; i++){
+	// 	// struct symbol *curr = &all_lut[0][i];
+	// 	if(lut[i].table_idx == 0) {
+	// 		printf("%d\n", i);
+	// 	}
+	// }
 	decode(lut, fp);
 
 

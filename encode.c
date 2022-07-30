@@ -7,6 +7,7 @@
 #define MAX 128
 
 int size = 0;
+int current_count = 0;
 
 struct Frequency {
    char  symbol;
@@ -120,7 +121,9 @@ void print_array(int arr[], int n)
 		printf("%d", arr[i]);
     }
     // delimiter
-    printf(",");
+	if(current_count < size) {
+    	printf(",");
+	}
 }
 
 int is_leaf(struct MinHeapNode* root) {
@@ -179,7 +182,7 @@ void write_codes(struct MinHeapNode* root, int arr[], int top, char* lut[]) {
 				code[i] = '0';
 			}
         }
-
+		current_count++;
         lut[root->data] = code;
 		printf("%c", root->data);
 		print_array(arr, top);
@@ -268,6 +271,9 @@ int main(int argc, char **argv) {
 	encode(frequencies, size, lut);
 
     FILE *fp = fopen(f_input, "rb");
+
+	// Add character outside of our alphabet to know when to break when decoding
+	// printf("%c", -1);
 
     // Separate the code mappings from the encoded message
     printf("\n");
