@@ -298,7 +298,6 @@ int main(int argc, char **argv) {
         // putchar(lut[c]);
         c = fgetc(fp);
     }
-    printf("\n");
 
     fclose(fp);
 
