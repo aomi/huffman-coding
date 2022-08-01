@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include <stdlib.h>
 
 struct symbol {
@@ -20,9 +21,9 @@ void print_tables(struct symbol** all_lut){
 		printf("Table %d\n", i);
 		for(int j = 0; j < 256; j++){
 			struct symbol curr = all_lut[i][j];
-			// if(curr.code_length != 0){
+			if(curr.code_length != 0){
 				print_symbol(curr);
-			// }
+			}
 		}
 	}
 }
@@ -41,6 +42,13 @@ void print_table(int n, struct symbol** all_lut){
 void print_bin(unsigned char value)
 {
     for (int i = sizeof(char) * 7; i >= 0; i--)
+        printf("%d", (value & (1 << i)) >> i );
+    putc('\n', stdout);
+}
+
+void print_32_bin(unsigned int value)
+{
+    for (int i = 31; i >= 0; i--)
         printf("%d", (value & (1 << i)) >> i );
     putc('\n', stdout);
 }
@@ -82,27 +90,30 @@ void build_lut(struct symbol** all_lut, FILE* fp) {
 			// Shift the code so the only 8 bits we care about are present as the most significant bits
 			unsigned int temp = code << (8 * i);
 			// Shift so the 8 significant bits are the only bits
-			char chunk = temp >> 24;
+			unsigned char chunk = temp >> 24;
 
 			struct symbol curr = all_lut[lut_idx][chunk];
 			// If this chunk hasn't been initialized (doesn't point to another LUT)
-			if(curr.table_idx == lut_idx) {
+			if(curr.table_idx == 0) {
 				// Create a new LUT and point to it at this chunk of the current LUT
 				lut_count++;
-				struct symbol new_lut[256] = {{0}};
+				struct symbol* new_lut = (struct symbol *)malloc(256 * sizeof(struct symbol));
 				all_lut[lut_count] = new_lut;
-				all_lut[lut_idx][chunk].table_idx = lut_count;
-				all_lut[lut_idx][chunk].code_length = 8;
+				struct symbol pointer;
+				pointer.table_idx = lut_count;
+				pointer.code_length = 8;
+				all_lut[lut_idx][chunk] = pointer;
 			}
-			// Head into the next LUT and shift over 8 bits
+			// Head into the existing LUT
 			lut_idx = all_lut[lut_idx][chunk].table_idx;
+			// Head into the next LUT and shift over 8 bits
 			temp_len -= 8;
 
 			i++;
 		}
 
 		new_entry.code_length = temp_len;
-		new_entry.table_idx = lut_idx;
+		new_entry.table_idx = 0;
 
 		// Once it comes to iteratively entering the symbol into the LUT we only care about the last 8 bits
 		u_int8_t lower_bound = code >> (32 - (8 * (i + 1)));
@@ -154,15 +165,13 @@ void decode(struct symbol** all_lut, FILE* fp){
 
 		// Find the current chunk in the look up table
 		symbol = all_lut[curr_lut][chunk];
-		if(symbol.table_idx == curr_lut){
+		if(symbol.table_idx == 0){
 			printf("%c", symbol.symbol);
 			curr_lut = 0;
 		} else {
 			curr_lut = symbol.table_idx;
 		}
 
-		// printf("that guy was %d long\n", symbol.code_length);
-		// Get rid of the old bits
 		previous_chunk_size = symbol.code_length;
 		chunk <<= previous_chunk_size;
     }
@@ -171,20 +180,32 @@ void decode(struct symbol** all_lut, FILE* fp){
 }
 
 int main(int argc,char **argv){
-	if (argc != 2) {
+	int time = 0;
+	clock_t t;
+    int f;
+    t = clock();
+
+	if (argc > 3 || argc < 2) {
         printf("Invalid input\n");
         return 0;
     }
+	if(argc == 3){
+		time = 1;
+	}
     char* f_input = argv[1];
 
 	struct symbol* all_lut[10];
 
-	struct symbol lut[256] = {{0}};
+	struct symbol *lut = (struct symbol *)malloc(256 * sizeof(struct symbol));
 	all_lut[0] = lut;
 
     FILE *fp = fopen(f_input, "rb");
 	build_lut(all_lut, fp);
 	decode(all_lut, fp);
 
-	return 0;
+    t = clock() - t;
+	if(time){
+		printf("No. of clicks %ld clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
+	}
+    return 0;
 }

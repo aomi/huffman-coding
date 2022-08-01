@@ -2,6 +2,7 @@
 // Modified from: https://www.geeksforgeeks.org/huffman-coding-greedy-algo-3/
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define MAX_TREE_HT 100
 #define MAX 128
@@ -259,10 +260,19 @@ void print_bin(unsigned char value)
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
+	int time = 0;
+	clock_t t;
+    int f;
+
+    if (argc > 3 || argc < 2) {
         printf("Invalid input\n");
         return 0;
     }
+
+	 if (argc == 3) {
+        time = 1;
+    }
+
     char* f_input = argv[1];
     struct Frequency frequencies[MAX];
     get_frequencies(f_input, frequencies);
@@ -273,10 +283,8 @@ int main(int argc, char **argv) {
     FILE *fp = fopen(f_input, "rb");
 
 	// Add character outside of our alphabet to know when to break when decoding
-	// printf("%c", -1);
 
     // Separate the code mappings from the encoded message
-    printf("\n");
     char c = fgetc(fp);
 	char curr = 0;
 	int count = 0;
@@ -295,11 +303,15 @@ int main(int argc, char **argv) {
 				curr = 0;
 			}
 		}
-        // putchar(lut[c]);
         c = fgetc(fp);
     }
 
     fclose(fp);
+
+	t = clock() - t;
+	if(time){
+		printf("\nNo. of clicks %ld clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
+	}
 
 	return 0;
 }
