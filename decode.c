@@ -17,9 +17,11 @@ void print_symbol(struct symbol symbol) {
 }
 
 void print_tables(struct symbol** all_lut){
-	for(int i = 0; i <= lut_count; i++){
+	int i;
+	int j;
+	for(i = 0; i <= lut_count; i++){
 		printf("Table %d\n", i);
-		for(int j = 0; j < 256; j++){
+		for(j = 0; j < 256; j++){
 			struct symbol curr = all_lut[i][j];
 			if(curr.code_length != 0){
 				print_symbol(curr);
@@ -30,7 +32,8 @@ void print_tables(struct symbol** all_lut){
 
 void print_table(int n, struct symbol** all_lut){
 	printf("Table %d\n", n);
-	for(int j = 0; j < 256; j++){
+	int j;
+	for(j = 0; j < 256; j++){
 		struct symbol curr = all_lut[n][j];
 		// if(curr.code_length != 0){
 			printf("%d ", j);
@@ -41,14 +44,16 @@ void print_table(int n, struct symbol** all_lut){
 
 void print_bin(unsigned char value)
 {
-    for (int i = sizeof(char) * 7; i >= 0; i--)
+	int i;
+    for (i = sizeof(char) * 7; i >= 0; i--)
         printf("%d", (value & (1 << i)) >> i );
     putc('\n', stdout);
 }
 
 void print_32_bin(unsigned int value)
 {
-    for (int i = 31; i >= 0; i--)
+	int i;
+    for (i = 31; i >= 0; i--)
         printf("%d", (value & (1 << i)) >> i );
     putc('\n', stdout);
 }
@@ -122,8 +127,9 @@ void build_lut(struct symbol** all_lut, FILE* fp) {
 		// Enter into LUT.
 		// i.e. for code "10", all values integers "0b10XXXXXX" should find this entry
 		// That is why we need an upper and lower bound
-		for (int i = lower_bound; i <= upper_bound; i++){
-			all_lut[lut_idx][i] = new_entry;
+		int k;
+		for (k = lower_bound; k <= upper_bound; k++){
+			all_lut[lut_idx][k] = new_entry;
 		}
 
 		if(c == '\n') {

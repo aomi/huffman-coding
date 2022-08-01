@@ -133,8 +133,8 @@ int is_leaf(struct MinHeapNode* root) {
 
 struct MinHeap* create_and_build_min_heap(struct Frequency frequencies[], int size) {
 	struct MinHeap* minHeap = create_min_heap(size);
-
-	for (int i = 0; i < size; ++i) {
+	int i;
+	for (i = 0; i < size; ++i) {
 		minHeap->array[i] = new_node(frequencies[i].symbol, frequencies[i].frequency);
     }
 
@@ -176,7 +176,8 @@ void write_codes(struct MinHeapNode* root, int arr[], int top, char* lut[]) {
 
 	if (is_leaf(root)) {
         char* code = (char *)malloc(top + 1);
-        for(int i = 0; i < top; i++){
+		int i;
+        for(i = 0; i < top; i++){
 			if(arr[i] == 1){
             	code[i] = '1';
 			} else {
@@ -199,30 +200,14 @@ void encode(struct Frequency frequencies[], int size, char* lut[]) {
 }
 
 int find_symbol_index(struct Frequency* frequencies, char symbol) {
-    for(int i = 0; i < size; i ++){
+	int i;
+    for(i = 0; i < size; i ++){
         if(frequencies[i].symbol == symbol) {
             return i;
         }
     }
 
     return -1;
-}
-
-void read(){
-	FILE *fp;
-	struct Frequency my_record;
-
-	fp = fopen("out.bin", "rb");
-	if (!fp) {
-		printf("Unable to open file!");
-		return;
-	}
-	for (int i = 0; i < size; i++) {
-		fread(&my_record, sizeof(struct Frequency), 1, fp);
-		printf("%c %d\n", my_record.symbol, my_record.frequency);
-	}
-
-	fclose(fp);
 }
 
 void get_frequencies(char* f_name, struct Frequency* frequencies) {
@@ -254,7 +239,8 @@ void get_frequencies(char* f_name, struct Frequency* frequencies) {
 
 void print_bin(unsigned char value)
 {
-    for (int i = sizeof(char) * 7; i >= 0; i--)
+	int i;
+    for (i = sizeof(char) * 7; i >= 0; i--)
         printf("%d", (value & (1 << i)) >> i );
     putc('\n', stdout);
 }
@@ -282,15 +268,16 @@ int main(int argc, char **argv) {
 
     FILE *fp = fopen(f_input, "rb");
 
-	// Add character outside of our alphabet to know when to break when decoding
+	printf("\n");
 
     // Separate the code mappings from the encoded message
     char c = fgetc(fp);
 	char curr = 0;
 	int count = 0;
+	int i;
     while (!feof(fp)) {
 		char* s = lut[c];
-		for(int i = 0; s[i] != '\0'; i++){
+		for(i = 0; s[i] != '\0'; i++){
 			if(s[i] == '1'){
 				curr = ((curr << 1) | 1);
 			} else {
