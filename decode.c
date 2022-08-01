@@ -35,10 +35,8 @@ void print_table(int n, struct symbol** all_lut){
 	int j;
 	for(j = 0; j < 256; j++){
 		struct symbol curr = all_lut[n][j];
-		// if(curr.code_length != 0){
-			printf("%d ", j);
-			print_symbol(curr);
-		// }
+		printf("%d ", j);
+		print_symbol(curr);
 	}
 }
 
