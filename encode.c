@@ -249,6 +249,7 @@ int main(int argc, char **argv) {
 	int time = 0;
 	clock_t t;
     int f;
+    t = clock();
 
     if (argc > 3 || argc < 2) {
         printf("Invalid input\n");
