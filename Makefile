@@ -11,7 +11,7 @@ decode: decode.c
 	gcc decode.c -o decode
 
 decode-o: decode_optimized.c
-	gcc decode_optimized.c -o decode
+	gcc decode_optimized.c -o decode-o
 
 .PHONY clean:
 clean:
