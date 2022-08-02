@@ -3,13 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
+#include <string.h>
 #define MAX_TREE_HT 100
 #define MAX 128
 
 int size = 0;
 int current_count = 0;
-
+int file_length = 0;
 struct Frequency {
    char  symbol;
    unsigned frequency;
@@ -179,8 +179,10 @@ void write_codes(struct MinHeapNode* root, int arr[], int top, char* lut[]) {
         for(i = 0; i < top; i++){
 			if(arr[i] == 1){
             	code[i] = '1';
+				file_length++;
 			} else {
 				code[i] = '0';
+				file_length++;
 			}
         }
 		current_count++;
@@ -190,12 +192,14 @@ void write_codes(struct MinHeapNode* root, int arr[], int top, char* lut[]) {
 	}
 }
 
-void encode(struct Frequency frequencies[], int size, char* lut[]) {
+struct MinHeapNode* encode(struct Frequency frequencies[], int size, char* lut[]) {
 	struct MinHeapNode* root = build_huffman_tree(frequencies, size);
 
 	int arr[MAX], top = 0;
 
 	write_codes(root, arr, 0, lut);
+	
+	return root;
 }
 
 int find_symbol_index(struct Frequency* frequencies, char symbol) {
@@ -215,6 +219,7 @@ void get_frequencies(char* f_name, struct Frequency* frequencies) {
     char c = fgetc(fp);
     int j = 0;
     while (!feof(fp)) {
+		file_length++;
         int i = find_symbol_index(frequencies, c);
         if(i == -1) {
             frequencies[j].symbol = c;
@@ -243,6 +248,22 @@ void print_bin(unsigned char value)
         printf("%d", (value & (1 << i)) >> i );
     putc('\n', stdout);
 }
+void decode(struct MinHeapNode* root, char* encoded_message){
+	int i;
+	struct MinHeapNode* curr = root;
+	for(i = 0; i < strlen(encoded_message); i++){
+		if(encoded_message[i] == '0'){
+			curr = curr->left;
+		} else {
+			curr = curr->right;
+		}
+		if(is_leaf(curr)){
+			printf("%c", curr->data);
+			curr = root;
+		}
+	}
+}
+    
 
 int main(int argc, char **argv) {
 	int time = 0;
@@ -273,7 +294,7 @@ int main(int argc, char **argv) {
 	printf("\n");
 	//
     char* lut[MAX] = { };
-	encode(frequencies, size, lut);
+	struct MinHeapNode* head = encode(frequencies, size, lut);
 
     FILE *fp = fopen(f_input, "rb");
 
@@ -284,17 +305,21 @@ int main(int argc, char **argv) {
 	char curr = 0;
 	int count = 0;
 	int i;
+	char* encoded_message = (char *)malloc(sizeof(char *)*file_length*2);
     while (!feof(fp)) {
 		char* s = lut[c];
 		for(i = 0; s[i] != '\0'; i++){
 			if(s[i] == '1'){
 				curr = ((curr << 1) | 1);
+				strcat(encoded_message, "1");
 			} else {
 				curr <<= 1;
+				strcat(encoded_message, "0");
 			}
 			count++;
 			if(count == 8) {
 				putchar(curr);
+				
 				count = 0;
 				curr = 0;
 			}
@@ -308,6 +333,11 @@ int main(int argc, char **argv) {
 	if(time){
 		printf("\nNo. of clicks %ld clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
 	}
+	printf("\n");
+
+	decode(head,encoded_message);
+	printf("\n");
 
 	return 0;
 }
+

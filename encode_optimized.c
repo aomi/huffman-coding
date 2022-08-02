@@ -28,7 +28,8 @@ struct MinHeap {
 };
 
 void print_frequency(struct Frequency frequency) {
-    printf("%c%d", frequency.symbol,frequency.frequency);
+    printf("Symbol: %c", frequency.symbol);
+    printf(" | Frequency: %d\n", frequency.frequency);
 }
 
 struct MinHeapNode* new_node(char data, unsigned freq) {
@@ -209,7 +210,7 @@ int find_symbol_index(struct Frequency* frequencies, char symbol) {
     return -1;
 }
 
-void get_frequencies(char* f_name, struct Frequency* frequencies) {
+void get_frequencies(char* restrict f_name, struct Frequency* restrict frequencies) {
     FILE *fp = fopen(f_name, "rb");
 
     char c = fgetc(fp);
@@ -263,15 +264,6 @@ int main(int argc, char **argv) {
     struct Frequency frequencies[MAX];
     get_frequencies(f_input, frequencies);
 
-	//FOR TREE HUFFMAN
-	for(int i = 0 ; i < size; i++){
-		print_frequency(frequencies[i]);
-		if(i+1 != size){
-		printf(",");
-		}
-	}
-	printf("\n");
-	//
     char* lut[MAX] = { };
 	encode(frequencies, size, lut);
 
