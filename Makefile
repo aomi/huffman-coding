@@ -4,13 +4,13 @@ all: encode encode-o decode decode-o
 encode: encode.c
 	gcc encode.c -o encode
 
-disklist: encode_optimized.c
+encode-o: encode_optimized.c
 	gcc encode_optimized.c -o encode-o
 
-diskget: decode.c
+decode: decode.c
 	gcc decode.c -o decode
 
-diskput: decode_optimized.c
+decode-o: decode_optimized.c
 	gcc decode_optimized.c -o decode
 
 .PHONY clean:
