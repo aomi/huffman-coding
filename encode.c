@@ -263,15 +263,6 @@ int main(int argc, char **argv) {
     struct Frequency frequencies[MAX];
     get_frequencies(f_input, frequencies);
 
-	//FOR TREE HUFFMAN
-	for(int i = 0 ; i < size; i++){
-		print_frequency(frequencies[i]);
-		if(i+1 != size){
-		printf(",");
-		}
-	}
-	printf("\n");
-	//
     char* lut[MAX] = { };
 	encode(frequencies, size, lut);
 
