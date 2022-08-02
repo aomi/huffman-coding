@@ -3,9 +3,9 @@
 #include <stdlib.h>
 
 struct symbol {
-   int table_idx;
+   char table_idx;
    char  symbol;
-   int code_length;
+   char code_length;
 };
 
 int lut_count = 0;
