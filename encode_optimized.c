@@ -218,13 +218,14 @@ void get_frequencies(char* restrict f_name, struct Frequency* restrict frequenci
 
     char c = fgetc(fp);
     int j = 0;
+	int local_size = size;
     while (!feof(fp)) {
         int i = find_symbol_index(frequencies, c);
         if(i == -1) {
             frequencies[j].symbol = c;
             frequencies[j].frequency = 1;
             j++;
-            size++;
+            local_size++;
         } else {
             struct Frequency curr_freq = frequencies[i];
             int prev_freq = curr_freq.frequency;
@@ -233,6 +234,7 @@ void get_frequencies(char* restrict f_name, struct Frequency* restrict frequenci
         }
         c = fgetc(fp);
     }
+	size = local_size;
 
     fclose(fp);
 

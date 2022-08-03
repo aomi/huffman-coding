@@ -248,20 +248,26 @@ void print_bin(unsigned char value)
         printf("%d", (value & (1 << i)) >> i );
     putc('\n', stdout);
 }
-void decode(struct MinHeapNode* root, char* encoded_message){
+void decode(char* f_input, struct MinHeapNode* root,char* lut[]){
 	int i;
 	struct MinHeapNode* curr = root;
-	for(i = 0; i < strlen(encoded_message); i++){
-		if(encoded_message[i] == '0'){
-			curr = curr->left;
-		} else {
-			curr = curr->right;
+    FILE *fp = fopen(f_input, "rb");
+	char c = fgetc(fp);
+	 while (!feof(fp)) {
+		char* s = lut[c];
+		for(i = 0; s[i] != '\0'; i++){
+			if(s[i] == '1'){
+				curr = curr->right;
+			} else {
+				curr = curr->left;
+			}
+			if(is_leaf(curr)){
+				printf("%c", curr->data);
+				curr = root;
+			}
 		}
-		if(is_leaf(curr)){
-			printf("%c", curr->data);
-			curr = root;
-		}
-	}
+        c = fgetc(fp);
+    }
 }
     
 
@@ -296,47 +302,21 @@ int main(int argc, char **argv) {
     char* lut[MAX] = { };
 	struct MinHeapNode* head = encode(frequencies, size, lut);
 
-    FILE *fp = fopen(f_input, "rb");
-
-	printf("\n");
-
-    // Separate the code mappings from the encoded message
-    char c = fgetc(fp);
-	char curr = 0;
-	int count = 0;
-	int i;
-	char* encoded_message = (char *)malloc(sizeof(char *)*file_length*2);
-    while (!feof(fp)) {
-		char* s = lut[c];
-		for(i = 0; s[i] != '\0'; i++){
-			if(s[i] == '1'){
-				curr = ((curr << 1) | 1);
-				strcat(encoded_message, "1");
-			} else {
-				curr <<= 1;
-				strcat(encoded_message, "0");
-			}
-			count++;
-			if(count == 8) {
-				putchar(curr);
-				
-				count = 0;
-				curr = 0;
-			}
-		}
-        c = fgetc(fp);
-    }
-
-    fclose(fp);
-
 	t = clock() - t;
 	if(time){
 		printf("\nNo. of clicks %ld clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
 	}
 	printf("\n");
 
-	decode(head,encoded_message);
-	printf("\n");
+	// can comment the next bit out to figure out decoding times for huffman tree
+	// clock_t clock;
+	// clock = clock();
+	// decode(f_input,head,lut);
+	// clock = clock() - clock;
+	// if(time){
+	// 	printf("\nNo. of clicks %ld clicks (%f seconds) to DECODE.\n", t, ((float)clock) / CLOCKS_PER_SEC);
+	// }
+	// printf("\n");
 
 	return 0;
 }
