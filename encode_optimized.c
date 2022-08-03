@@ -98,9 +98,9 @@ void insert_into_min_heap(struct MinHeap* minHeap, struct MinHeapNode* minHeapNo
 	++minHeap->size;
 	int i = minHeap->size - 1;
 
-	while (i && (minHeapNode->freq < minHeap->array[(i - 1) / 2]->freq)) {
-		minHeap->array[i] = minHeap->array[(i - 1) / 2];
-		i = (i - 1) / 2;
+	while (i && (minHeapNode->freq < minHeap->array[(i - 1) >> 1]->freq)) {
+		minHeap->array[i] = minHeap->array[(i - 1) >> 1];
+		i = (i - 1) >> 1;
 	}
 
 	minHeap->array[i] = minHeapNode;
@@ -110,7 +110,7 @@ void build_min_heap(struct MinHeap* minHeap) {
 	int n = minHeap->size - 1;
 	int i;
 
-	for (i = (n - 1) / 2; i >= 0; --i) {
+	for (i = (n - 1) >> 1; i >= 0; --i) {
 		min_heapify(minHeap, i);
     }
 }
@@ -118,11 +118,12 @@ void build_min_heap(struct MinHeap* minHeap) {
 void print_array(int arr[], int n)
 {
 	int i;
+	int local_size = size;
 	for (i = 0; i < n; ++i) {
 		printf("%d", arr[i]);
     }
     // delimiter
-	if(current_count < size) {
+	if(current_count < local_size) {
     	printf(",");
 	}
 }
@@ -200,8 +201,10 @@ void encode(struct Frequency frequencies[], int size, char* lut[]) {
 }
 
 int find_symbol_index(struct Frequency* frequencies, char symbol) {
+
 	int i;
-    for(i = 0; i < size; i ++){
+	int local_size = size;
+    for(i ^= i; i < local_size; i++){
         if(frequencies[i].symbol == symbol) {
             return i;
         }
