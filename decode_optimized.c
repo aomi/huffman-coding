@@ -11,7 +11,14 @@ struct symbol {
 void build_lut(struct symbol** restrict all_lut, FILE* restrict fp) {
 	register char c = fgetc(fp);
 	// Optimization: Remove global variable
-	register int lut_count = 0;
+	register char lut_count;
+	lut_count ^= lut_count;
+	register unsigned int code;
+	register char len;
+	register char temp_len;
+	register char lut_idx;
+	register char i;
+	register int k;
 
 	// Iterate through the first line character by character
 	while(1) {
@@ -19,8 +26,8 @@ void build_lut(struct symbol** restrict all_lut, FILE* restrict fp) {
 		struct symbol new_entry;
 		new_entry.symbol = c;
 
-		register unsigned int code = 0;
-		register int len = 0;
+		code ^= code;
+		len ^= len;
 
 		// Iterate through the new entry's binary (comma separated)
 		// Use while(1) so we can still read commas as a valid symbol
@@ -39,9 +46,9 @@ void build_lut(struct symbol** restrict all_lut, FILE* restrict fp) {
 			c = fgetc(fp);
 		}
 
-		int temp_len = len;
-		int lut_idx = 0;
-		int i = 0;
+		temp_len = len;
+		lut_idx ^= lut_idx;
+		i ^= i;
 		// Iterate through the code spliting it up into chunks of 8
 		// Upsets appropriate look up table
 		while(temp_len > 8) {
@@ -80,7 +87,6 @@ void build_lut(struct symbol** restrict all_lut, FILE* restrict fp) {
 		// Enter into LUT.
 		// i.e. for code "10", all values integers "0b10XXXXXX" should find this entry
 		// That is why we need an upper and lower bound
-		int k;
 		for (k = lower_bound; k <= upper_bound; k++){
 			all_lut[lut_idx][k] = new_entry;
 		}

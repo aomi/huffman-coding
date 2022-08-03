@@ -262,7 +262,7 @@ void decode(char* f_input, struct MinHeapNode* root,char* lut[]){
 				curr = curr->left;
 			}
 			if(is_leaf(curr)){
-				// printf("%c", curr->data);
+				printf("%c", curr->data);
 				curr = root;
 			}
 		}
