@@ -262,7 +262,7 @@ void decode(char* f_input, struct MinHeapNode* root,char* lut[]){
 				curr = curr->left;
 			}
 			if(is_leaf(curr)){
-				printf("%c", curr->data);
+				// printf("%c", curr->data);
 				curr = root;
 			}
 		}
@@ -304,19 +304,18 @@ int main(int argc, char **argv) {
 
 	t = clock() - t;
 	if(time){
-		printf("\nNo. of clicks %ld clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
+		printf("\nNo. of clicks %ld clicks (%f seconds) to ENCODE.\n", t, ((float)t) / CLOCKS_PER_SEC);
 	}
 	printf("\n");
 
 	// can comment the next bit out to figure out decoding times for huffman tree
-	// clock_t clock;
-	// clock = clock();
-	// decode(f_input,head,lut);
-	// clock = clock() - clock;
-	// if(time){
-	// 	printf("\nNo. of clicks %ld clicks (%f seconds) to DECODE.\n", t, ((float)clock) / CLOCKS_PER_SEC);
-	// }
-	// printf("\n");
+	t = clock();
+	decode(f_input,head,lut);
+	t = clock() - t;
+	if(time){
+		printf("\nNo. of clicks %ld clicks (%f seconds) to DECODE.\n", t, ((float)t) / CLOCKS_PER_SEC);
+	}
+	printf("\n");
 
 	return 0;
 }

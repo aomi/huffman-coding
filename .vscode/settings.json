@@ -6,6 +6,7 @@
     "string": "c",
     "string_view": "c",
     "__node_handle": "c",
-    "cstdlib": "c"
+    "cstdlib": "c",
+    "iterator": "c"
   }
 }
